@@ -1,0 +1,201 @@
+#include<bits/stdc++.h>
+ 
+using namespace std;
+ 
+#define sp << " " <<
+#define mod 1000000007
+#define mp make_pair
+#define pb push_back
+#define int long long
+#define INF 1e18
+ 
+int power(int p,int y)
+{
+    int res=1;
+    p=p%mod;
+    while(y>0)
+    {
+        if(y&1)
+            res=(res*p)%mod;
+        y=y>>1;
+        p=(p*p)%mod;
+    }
+    return res;
+}
+ 
+/*
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+ 
+int dice()
+{
+    uniform_int_distribution<int> uid(0,mod-1);//specify l and r.
+    return uid(rng) ;
+}
+ 
+int read()
+{
+       int cc = getc(stdin);
+       for (;cc < '0' || cc > '9';)  cc = getc(stdin);
+       int dp = 0;
+       for (;cc >= '0' && cc <= '9';)
+       {
+          dp = dp * 10 + cc - '0';
+          cc = getc(stdin);
+       }
+      return dp;
+}
+ 
+inline void print(int n)
+{
+  if (n == 0)
+  {
+    putchar('0');
+    putchar('\n');
+  }
+  else if (n == -1)
+  {
+    putchar('-');
+    putchar('1');
+    putchar('\n');
+  }
+  else
+  {
+    char buf[11];
+    buf[10] = ' ';
+    int i = 9;
+    while (n)
+    {
+      buf[i--] = n % 10 + '0';
+      n /= 10;
+    }
+    while (buf[i] != ' ')
+      putchar(buf[++i]);
+  }
+}
+*/
+ 
+int t[8][2]={{-2,1},{-2,-1},{-1,-2},{-1,2},{1,-2},{1,2},{2,-1},{2,1}};
+int w[1013][1013],b[1013][1013];
+int n,m;
+int d,p;
+ 
+void bfs(int x,int y,int a[1013][1013])
+{
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=m;j++)
+            a[i][j]=INF;
+    a[x][y]=0;
+    queue < pair <int,int> > q;
+    q.push(mp(x,y));
+    while(!q.empty())
+    {
+        int x=q.front().first;
+        int y=q.front().second;
+        q.pop();
+        for(int i=0;i<8;i++)
+        {
+            int s=x+t[i][0];
+            int h=y+t[i][1];
+            if(1<=s&&1<=h&&s<=n&&h<=m&&a[x][y]+1<a[s][h])
+            {
+                a[s][h]=a[x][y]+1;
+                q.push(mp(s,h));
+            }
+        }
+    }
+}
+ 
+void dp(int x,int y,int a[1013][1013])
+{
+    while(1)
+    {
+        if(a[x][y]==0)
+            break;
+        for(int i=0;i<8;i++)
+        {
+            int s=x+t[i][0];
+            int h=y+t[i][1];
+            if(s==d&&h==p)
+            {
+                cout << s sp h << endl;
+                return;
+            }
+        }
+        for(int i=0;i<8;i++)
+        {
+            int s=x+t[i][0];
+            int h=y+t[i][1];
+            if(1<=s&&1<=h&&s<=n&&h<=m&&a[s][h]==a[x][y]-1)
+            {
+                cout << s sp h << endl;
+                x=s;
+                y=h;
+                break;
+            }
+        }
+        if(a[x][y]==0)
+            break;
+        cin >> d >> p;
+    }
+}
+ 
+int32_t main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    //freopen("input.txt", "r", stdin);
+    //freopen("output.txt", "w", stdout);
+    cin >> n >> m;
+    bfs(n/2,m/2,w);
+    bfs(n/2+1,m/2,b);
+    int k,y,l,z;
+    cin >> k >> y >> l >> z;
+    int e=w[k][y];
+    int f=b[k][y];
+    int g=b[l][z];
+    int h=w[l][z];
+ 
+    if((k+y)%2!=(l+z)%2)
+    {
+        if(e<=g)
+        {
+            cout << "WHITE" << endl;
+            dp(k,y,w);
+        }
+        else if(f<=g+1)
+        {
+            cout << "WHITE" << endl;
+            dp(k,y,b);
+            dp(n/2+1,m/2,w);
+        }
+        else
+        {
+            cout << "BLACK" << endl;
+            cin >> d >> p;
+            dp(l,z,b);
+        }
+    }
+    else
+    {
+        if(g<e)
+        {
+            cout << "BLACK" << endl;
+            cin >> d >> p;
+            dp(l,z,b);
+        }
+        else if(h<=e)
+        {
+            cout << "BLACK" << endl;
+            cin >> d >> p;
+            dp(l,z,w);
+            dp(n/2,m/2,b);
+        }
+        else
+        {
+            cout << "WHITE" << endl;
+            dp(k,y,w);
+        }
+    }
+    return 0;
+}
