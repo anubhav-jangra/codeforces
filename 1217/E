@@ -1,0 +1,200 @@
+#include<bits/stdc++.h>
+ 
+using namespace std;
+ 
+#define sp << " " <<
+#define mod 1000000007
+#define mp make_pair
+#define pb push_back
+//#define int long long
+#define double long double
+#define INF 2e9+1
+#define PI 3.14159265359
+ 
+int power(int p,int y)
+{
+    int res=1;
+    //p=p%mod;
+    while(y>0)
+    {
+        if(y&1)
+            res=(res*p)%mod;
+        y=y>>1;
+        p=(p*p)%mod;
+    }
+    return res;
+}
+ 
+/*
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+ 
+int dice()
+{
+    uniform_int_distribution<int> uid(0,1);//specify l and r.
+    return uid(rng) ;
+}
+*/
+ 
+int read()
+{
+       int cc = getc(stdin);
+       for (;cc < '0' || cc > '9';)  cc = getc(stdin);
+       int dp = 0;
+       for (;cc >= '0' && cc <= '9';)
+       {
+          dp = dp * 10 + cc - '0';
+          cc = getc(stdin);
+       }
+      return dp;
+}
+ 
+inline void print(int n)
+{
+  if (n == 0)
+  {
+    putchar('0');
+    putchar('\n');
+  }
+  else if (n == -1)
+  {
+    putchar('-');
+    putchar('1');
+    putchar('\n');
+  }
+  else
+  {
+    char buf[11];
+    buf[10] = '\n';
+    int i = 9;
+    while (n)
+    {
+      buf[i--] = n % 10 + '0';
+      n /= 10;
+    }
+    while (buf[i] != '\n')
+      putchar(buf[++i]);
+  }
+}
+ 
+ 
+pair<int,int> t[9][800013];
+int dp[4];
+int y[9];
+int s,h;
+ 
+void build(int a[],int v,int tl,int tr,int k)
+{
+    if(tl==tr)
+    {
+        if((a[tl]/y[k])%10)
+            t[k][v].first=a[tl];
+    }
+    else
+    {
+        int tm=tl+tr>>1;
+        build(a,v<<1,tl,tm,k);
+        build(a,v<<1|1,tm+1,tr,k);
+        dp[0]=t[k][v<<1].first;
+        dp[1]=t[k][v<<1].second;
+        dp[2]=t[k][v<<1|1].first;
+        dp[3]=t[k][v<<1|1].second;
+        s=min(dp[0],dp[2]);
+        h=min(dp[1],min(dp[3],max(dp[0],dp[2])));
+        t[k][v]=mp(s,h);
+    }
+}
+ 
+pair<int,int> query(int v,int tl,int tr,int l,int r,int k)
+{
+    if(l>r)
+        return {INF,INF};
+    if(l<=tl&&r>=tr)
+    {
+        return t[k][v];
+    }
+    int tm=tl+tr>>1;
+    pair<int,int> d=query(v<<1,tl,tm,l,min(r,tm),k),p=query(v<<1|1,tm+1,tr,max(l,tm+1),r,k);
+    dp[0]=d.first;
+    dp[1]=d.second;
+    dp[2]=p.first;
+    dp[3]=p.second;
+    s=min(dp[0],dp[2]);
+    h=min(dp[1],min(dp[3],max(dp[0],dp[2])));
+    return mp(s,h);
+}
+ 
+void update(int v,int tl,int tr,int pos,int new_val,int k)
+{
+    if(tl==tr)
+    {
+        if((new_val/y[k])%10)
+            t[k][v].first=new_val;
+        else
+            t[k][v].first=INF;
+    }
+    else
+    {
+        int tm=tl+tr>>1;
+        if(pos<=tm)
+            update(v<<1,tl,tm,pos,new_val,k);
+        else
+            update(v<<1|1,tm+1,tr,pos,new_val,k);
+        dp[0]=t[k][v<<1].first;
+        dp[1]=t[k][v<<1].second;
+        dp[2]=t[k][v<<1|1].first;
+        dp[3]=t[k][v<<1|1].second;
+        s=min(dp[0],dp[2]);
+        h=min(dp[1],min(dp[3],max(dp[0],dp[2])));
+        t[k][v]=mp(s,h);
+    }
+}
+ 
+int32_t main()
+{
+    ios::sync_with_stdio(false);
+    //cin.tie(0);
+    //cout.tie(0);
+    //freopen("input.txt", "r", stdin);
+    //freopen("output.txt", "w", stdout);
+    y[0]=1;
+    for(int i=1;i<9;i++)
+        y[i]=y[i-1]*10;
+    int n=read(),m=read();
+    int a[n];
+    for(int i=0;i<9;i++)
+        for(int j=0;j<800013;j++)
+            t[i][j].first=t[i][j].second=INF;
+    for(int i=0;i<n;i++)
+    {
+        a[i]=read();
+    }
+    for(int i=0;i<9;i++)
+    {
+        build(a,1,0,n-1,i);
+    }
+    while(m--)
+    {
+        int t=read(),l=read(),r=read();
+        if(t==1)
+        {
+            for(int i=0;i<9;i++)
+                update(1,0,n-1,l-1,r,i);
+        }
+        else
+        {
+            int dp=INF;
+            pair<int,int> h;
+            for(int i=0;i<9;i++)
+            {
+                h=query(1,0,n-1,l-1,r-1,i);
+                if(h.second<2e9)
+                    dp=min(dp,h.first+h.second);
+            }
+            if(dp>2e9)
+                print(-1);
+            else
+                print(dp);
+        }
+    }
+	return 0;
+}
